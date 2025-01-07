@@ -154,5 +154,3 @@ class Downsample(nn.Module):
     def forward(self, x: torch.Tensor, t: torch.Tensor):
         _ = t
         return self.conv(x)
-    
-
