@@ -1,8 +1,10 @@
+''''''
 from typing import List
 
 import torch
 import torch.nn.functional as F
 from torch import nn
+''''''
 
 class Autoencoder(nn.Module):
     def __init__(self, encoder: 'Encoder', decoder: 'Decoder', emb_channels: int, z_channels: int):
@@ -42,7 +44,7 @@ class Encoder(nn.Module):
             else:
                 down.downsample = nn.Identity()
             self.down.append(down)
-            
+
         self.mid = nn.Module()
         self.mid.block_1 = ResnetBlock(channels, channels)
         self.mid.attn_1 = AttnBlock(channels)
