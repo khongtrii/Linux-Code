@@ -62,3 +62,38 @@ class DownSample(nn.Module):
         return self.conv(x)
 """"""
 
+""" - Attention Block - """
+class AttnBlock(nn.Module):
+    def __init__(self, channels:int):
+        super().__init__()
+        self.norm = normalization(channels)
+
+        self.q = nn.Conv2d(channels, channels, 1)
+        self.k = nn.Conv2d(channels, channels, 1)
+        self.v = nn.Conv2d(channels, channels, 1)
+
+        self.proj_out = nn.Conv2d(channels, channels, 1)
+        self.scale = channels ** -0.5
+
+    def forward(self, x:torch.Tensor):
+        x_norm = self.norm(x)
+
+        q = self.q(x_norm)
+        k = self.k(x_norm)
+        v = self.v(x_norm)
+
+        b, c, h, w = q.shape
+
+        q = q.view(b, c, h * w)
+        k = k.view(b, c, h * w)
+        v = v.view(b, c, h * w)
+
+        attn = torch.einsum('bci,bcj->bij', q, k) * self.scale
+        attn = F.softmax(attn, dim=2)
+
+        out = torch.einsum('bij,bcj->bci', attn, v)
+        out = out.view(b, c, h, w)
+
+        out = self.proj_out(out)
+        return x + out
+""""""
