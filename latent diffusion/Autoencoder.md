@@ -3,9 +3,9 @@
 </style>
 
 <div style="font-size: 20pt; text-align: center; font-family: 'Fira Code', serif;">
-    THIS IS A FILE TO EXPLAIN THE MATH
+    THIS IS A FILE TO EXPLAIN THE CODE
 </div>
 
-<div style="font-size: 13pt; text-align: center; font-family: 'Fira Code', serif;">
-    THIS IS A FILE TO EXPLAIN THE MATH
+<div style="font-size: 17pt; text-align: center; font-family: 'Fira Code', serif;">
+    
 </div>
