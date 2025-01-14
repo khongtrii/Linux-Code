@@ -11,15 +11,18 @@ from part_module import cosine_schedule
 device = 'cuda' if torch.cuda.is_available() else 'mps' if torch.mps.is_available() else 'cpu'
 
 class DenoiseDiffusion:
-    def __init__(self, eps_model: nn.Module, schedule,  n_steps: int, device: torch.device):
+    def __init__(self, eps_model: nn.Module,  n_steps: int, device: torch.device):
         super().__init__()
         self.eps_model = eps_model
 
         steps = torch.randint(0, n_steps, (64, ), device=device)
-        beta = 0.02 + 0.5 * (1e-4 - 0.02) * (1 + torch.cos(3.14159 * steps / n_steps))  
-        self.beta = beta.sort()
+        # self.beta = 0.02 + 0.5 * (1e-4 - 0.02) * (1 + torch.cos(3.14159 * steps / n_steps))  
+        # self.beta = beta.sort()
+        # self.alpha = 1. - self.beta
+        # beta_values, _ = self.beta.sort()  # Chỉ lấy giá trị đã sắp xếp, không cần chỉ số
+        self.beta = torch.linspace(0.0001, 0.02, n_steps).to(device)
+        
         self.alpha = 1. - self.beta
-
         self.alpha_bar = torch.cumprod(self.alpha, dim=0).to(device)
 
         self.n_steps = n_steps
