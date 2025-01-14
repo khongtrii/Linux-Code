@@ -29,6 +29,7 @@ class Encoder(nn.Module):
         self.conv_in = nn.Conv2d(in_channels, channels, 3, stride=1, padding=1)
         channels_list = [m * channels for m in [1] + channel_multipliers]
         self.down = nn.ModuleList()
+
         for i in range(n_resolutions):
             resnet_blocks = nn.ModuleList()
             for _ in range(n_resnet_blocks):
@@ -41,6 +42,7 @@ class Encoder(nn.Module):
             else:
                 down.downsample = nn.Identity()
             self.down.append(down)
+            
         self.mid = nn.Module()
         self.mid.block_1 = ResnetBlock(channels, channels)
         self.mid.attn_1 = AttnBlock(channels)
