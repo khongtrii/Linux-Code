@@ -24,18 +24,22 @@ def Send():
                                             filetypes=(('file_type','*.txt'), ('all files', '*.*')))
         
     def sender():
-        s=socket.socket()
-        host=socket.gethostname()
-        port=8080
+        s = socket.socket()
+        host = socket.gethostname()
+        port = 8080
         s.bind((host, port))
         s.listen(1)
-        print(host)
-        print("Waiting for any incoming connections ...")
-        conn, addr=s.accept()
-        file=open(filename, 'rb')
-        file_data=file.read(1024)
-        conn.send(file_data)
-        print("Data has been transmitted successfully ..")
+        print(f"Host: {host}")
+        print("Waiting for any incoming connections...")
+        conn, addr = s.accept()
+        print(f"Connection established with {addr}")
+        
+        with open(filename, 'rb') as file:
+            while (data := file.read(1024)):
+                conn.send(data)
+        conn.close()
+        print("Data has been transmitted successfully.")
+
 
     image_icon1=PhotoImage(file="Image/send.png")
     window.iconphoto(False, image_icon1)
@@ -60,17 +64,18 @@ def Receive():
     main.resizable(False, False)
 
     def receiver():
-        ID=SenderID.get()
-        filename1=incoming_file.get()
-        s=socket.socket()
-        port=8080
+        ID = SenderID.get()
+        filename1 = incoming_file.get()
+        s = socket.socket()
+        port = 8080
         s.connect((ID, port))
-        file=open(filename1, 'wb')
-        file_data=s.recv(1024)
-        file.write(file_data)
-        file.close()
-        print("File has been received successfully")
-        pass
+        
+        with open(filename1, 'wb') as file:
+            while (data := s.recv(1024)):
+                file.write(data)
+        s.close()
+        print("File has been received successfully.")
+
 
     image_icon2=PhotoImage(file="Image/receive.png")
     main.iconphoto(False, image_icon2)
@@ -90,7 +95,7 @@ def Receive():
     incoming_file.place(x=20, y=450)
 
     imageicon=PhotoImage(file='Image/arrow.png')
-    rr=Button(main, text="Receive", compound=LEFT, image=imageicon, width=130, bg="#39c790", font='arial 14 bold', command='receiver')
+    rr=Button(main, text="Receive", compound=LEFT, image=imageicon, width=130, bg="#39c790", font='arial 14 bold', command=receiver)
     rr.place(x=20,y=500)
 
 
