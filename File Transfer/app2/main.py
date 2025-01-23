@@ -36,30 +36,39 @@ def send_frame():
         messagebox.showinfo("Files Selected", f"{len(file_queue)} files added to queue.")
 
     def sender():
-        if not file_queue:
-            messagebox.showerror("Error", "No files selected to send.")
-            return
+        try:
+            if not file_queue:
+                messagebox.showerror("Error", "No files selected to send.")
+                return
 
-        s = socket.socket()
-        host = socket.gethostname()
-        port = 8080
-        s.bind((host, port))
-        s.listen(1)
-        print(f"Host: {host}")
-        print("Waiting for any incoming connections...")
-        conn, addr = s.accept()
-        print(f"Connection established with {addr}")
+            s = socket.socket()
+            host = socket.gethostname()
+            port = 8080
+            s.bind((host, port))
+            s.listen(1)
+            print(f"Host: {host}")
+            print("Waiting for any incoming connections...")
+            conn, addr = s.accept()
+            print(f"Connection established with {addr}")
 
-        for file in file_queue:
-            conn.send(os.path.basename(file).encode())  # Send file name
-            with open(file, 'rb') as f:
-                while (data := f.read(1024)):
-                    conn.send(data)
-            conn.send(b"<END>")  # Indicate file transfer completion
-            print(f"{os.path.basename(file)} has been sent.")
+            for file in file_queue:
+                # Send file name
+                file_name = os.path.basename(file)
+                conn.send(file_name.encode())
+                conn.recv(1024)  # Acknowledgement from receiver
+                
+                # Send file data
+                with open(file, 'rb') as f:
+                    while (data := f.read(1024)):
+                        conn.send(data)
+                conn.send(b"<END>")
+                print(f"{file_name} has been sent.")
 
-        conn.close()
-        print("All files have been transmitted successfully.")
+            conn.close()
+            messagebox.showinfo("Success", "Files sent successfully!")
+        except Exception as e:
+            messagebox.showerror("Error", f"An error occurred: {e}")
+
 
     device_img = PhotoImage(file='Image/device.png')
     Label(window, image=device_img, bg='#f5ebe0').place(x=10, y=10)
@@ -84,10 +93,10 @@ def receive_frame():
     main.iconphoto(False, main_ico)
 
     def receiver():
-        s = socket.socket()
-        host = SenderID.get()
-        port = 8080
         try:
+            s = socket.socket()
+            host = SenderID.get()
+            port = 8080
             s.connect((host, port))
             print(f"Connected to {host}")
 
@@ -96,8 +105,9 @@ def receive_frame():
                 file_name = s.recv(1024).decode()
                 if not file_name:
                     break
+                s.send(b"ACK")  # Acknowledge file name
                 
-                print(f"Receiving file: {file_name}")
+                # Receive file data
                 with open(file_name, 'wb') as f:
                     while True:
                         data = s.recv(1024)
@@ -106,11 +116,10 @@ def receive_frame():
                             break
                         f.write(data)
                 print(f"File {file_name} received successfully.")
-
+            s.close()
         except Exception as e:
             messagebox.showerror("Error", f"Connection error: {e}")
-        finally:
-            s.close()
+
 
     main_fr1 = Frame(main, width=300, height=200, bg='#d4a373')
     main_fr1.place(x=75, y=150)
