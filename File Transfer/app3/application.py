@@ -21,8 +21,20 @@ class open_conn():
             s.listen(5)
             print(f"[*] Listening as {self.SERVER_HOST}:{self.SERVER_PORT}")
 
-            client_socket, address = s.accept()
-            print(f"[+] {address} is connected.")
+            s.settimeout(15)  # Đặt thời gian chờ là 30 giây
+
+            try:
+                # Nếu không có kết nối trong 30 giây, sẽ phát sinh exception
+                client_socket, address = s.accept()
+                print(f"[+] {address} is connected.")
+            except socket.timeout:
+                print("[!] No connection received within 30 seconds.")
+                conn_label.configure(text=f"We don't have any connection now !!!")
+                s.close()
+                btn_send.config(state=tk.NORMAL)
+                btn_open.config(state=tk.NORMAL)
+                return
+
             received = client_socket.recv(self.BUFFER_SIZE).decode()
             filename, filesize = received.split(self.SEPARATOR)
 
